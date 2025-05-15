@@ -10,6 +10,12 @@ import { hashPassword } from './password/hash-password'
 import { passwordSchema } from './password/schema'
 import { createSession } from './sessions/create-sesion'
 import { verifySession } from './sessions/verify-session'
+import { generateTOTP } from './totp/generate-totp'
+import { generateTOTPQRCode } from './totp/generate-totp-qr-code'
+import { generateTOTPSecret } from './totp/generate-totp-secret'
+import { generateTOTPUri } from './totp/generate-totp-uri'
+import type { TOTPOptions } from './totp/types'
+import { verifyTOTP } from './totp/verify-totp'
 
 export const defineTesseractUtils = ({
   cache: { redisClient },
@@ -20,6 +26,7 @@ export const defineTesseractUtils = ({
     refreshTokenExpiresIn,
     maxTokenAge,
   },
+  totp: { issuer, accountName, algorithm, digits, period },
 }: {
   cache: { redisClient: Redis }
   password: { saltRounds?: number }
@@ -29,6 +36,7 @@ export const defineTesseractUtils = ({
     refreshTokenExpiresIn: string
     maxTokenAge: number
   }
+  totp: TOTPOptions
 }) => {
   return {
     cache: {
@@ -64,6 +72,94 @@ export const defineTesseractUtils = ({
     apiResponse: {
       success: <T>(data: T) => success({ data }),
       error: <T>(message: T) => error({ message }),
+    },
+    totp: {
+      generateTOTPSecret: ({ length }: { length?: number }) =>
+        generateTOTPSecret({ length }),
+      generateTOTP: ({
+        secret,
+        counter,
+      }: {
+        secret: string
+        counter?: number
+      }) =>
+        generateTOTP({
+          secret,
+          counter,
+          options: {
+            accountName,
+            algorithm,
+            digits,
+            issuer,
+            period,
+          },
+        }),
+      verifyTOTP: ({
+        secret,
+        token,
+        window,
+      }: {
+        secret: string
+        token: string
+        window?: number
+      }) =>
+        verifyTOTP({
+          secret,
+          token,
+          window,
+          options: {
+            accountName,
+            algorithm,
+            digits,
+            issuer,
+            period,
+          },
+        }),
+      generateTOTPUri: ({
+        secret,
+        accountName,
+        issuer,
+      }: {
+        secret: string
+        accountName: string
+        issuer: string
+      }) =>
+        generateTOTPUri({
+          secret,
+          accountName,
+          issuer,
+          options: {
+            accountName,
+            algorithm,
+            digits,
+            issuer,
+            period,
+          },
+        }),
+      generateTOTPQRCode: ({
+        secret,
+        accountName,
+        qrOptions,
+      }: {
+        secret: string
+        accountName: string
+        qrOptions: {
+          errorCorrectionLevel: 'L' | 'M' | 'Q' | 'H'
+          margin: number
+          size: number
+        }
+      }) =>
+        generateTOTPQRCode({
+          secret,
+          accountName,
+          issuer: issuer || 'Tesseract',
+          qrOptions,
+          options: {
+            algorithm,
+            digits,
+            period,
+          },
+        }),
     },
   }
 }
