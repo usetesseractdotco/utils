@@ -23,6 +23,37 @@ yarn add @tesseract/utils
 bun add @tesseract/utils
 ```
 
+## Usage
+
+First, initialize the utilities with your configuration:
+
+```typescript
+import { defineTesseractUtils } from '@tesseract/utils';
+import Redis from 'ioredis';
+
+// Create a Redis client
+const redisClient = new Redis();
+
+// Initialize the utilities
+const utils = defineTesseractUtils({
+  cache: { 
+    redisClient 
+  },
+  password: { 
+    saltRounds: 12 
+  },
+  sessions: {
+    secretKey: process.env.SESSION_SECRET_KEY,
+    accessTokenExpiresIn: '15m',
+    refreshTokenExpiresIn: '7d',
+    maxTokenAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+  }
+});
+
+// Now use the utils in your application
+const { cache, password, sessions } = utils;
+```
+
 ## Modules
 
 ### TOTP (Time-based One-Time Password)
@@ -30,7 +61,8 @@ bun add @tesseract/utils
 Secure implementation of TOTP for two-factor authentication.
 
 ```typescript
-import { totp } from '@tesseract/utils';
+// First initialize utils as shown in Usage section
+const { totp } = utils;
 
 // Generate a new secret key
 const secret = totp.generateSecret();
@@ -51,16 +83,17 @@ const isValid = totp.verify(secret, '123456');
 Secure password hashing and verification.
 
 ```typescript
-import { password } from '@tesseract/utils';
+// First initialize utils as shown in Usage section
+const { password } = utils;
 
 // Hash a password
 const hashedPassword = await password.hash('user-password');
 
 // Verify a password
-const isValid = await password.verify('user-password', hashedPassword);
+const isValid = await password.compare('user-password', hashedPassword);
 
-// Generate a secure random password
-const newPassword = password.generate({ length: 12, includeSymbols: true });
+// Validate password against schema
+const isValidFormat = password.schema.safeParse('user-password');
 ```
 
 ### Session Management
@@ -68,19 +101,14 @@ const newPassword = password.generate({ length: 12, includeSymbols: true });
 Utilities for handling user sessions securely.
 
 ```typescript
-import { session } from '@tesseract/utils';
+// First initialize utils as shown in Usage section
+const { sessions } = utils;
 
 // Create a new session
-const { accessToken, refreshToken } = await session.create({
-  userId: 'user-123',
-  sessionId: 'session-456',
-});
+const { accessToken, refreshToken } = await sessions.create('user-123', 'session-456');
 
-// Validate a token
-const payload = await session.validate(accessToken);
-
-// Refresh a token
-const newTokens = await session.refresh(refreshToken);
+// Validate tokens
+const sessionData = await sessions.verify(accessToken, refreshToken);
 ```
 
 ### Crypto Utilities
@@ -88,7 +116,8 @@ const newTokens = await session.refresh(refreshToken);
 Encryption, decryption, and other cryptographic operations.
 
 ```typescript
-import { crypto } from '@tesseract/utils';
+// First initialize utils as shown in Usage section
+const { crypto } = utils;
 
 // Encrypt data
 const encrypted = await crypto.encrypt('sensitive data', process.env.SECRET_KEY);
@@ -105,16 +134,20 @@ const randomString = crypto.randomString(32);
 Simplified caching operations.
 
 ```typescript
-import { cache } from '@tesseract/utils';
+// First initialize utils as shown in Usage section
+const { cache } = utils;
 
 // Set a cache value
-await cache.set('key', { data: 'value' }, 3600); // 1 hour TTL
+await cache.set('key', JSON.stringify({ data: 'value' }), 3600); // 1 hour TTL
 
 // Get a cached value
 const value = await cache.get('key');
 
 // Delete from cache
 await cache.delete('key');
+
+// Clear the entire cache
+await cache.clear();
 ```
 
 ### API Response Formatting
@@ -122,7 +155,8 @@ await cache.delete('key');
 Consistent API response formatting.
 
 ```typescript
-import { response } from '@tesseract/utils';
+// First initialize utils as shown in Usage section
+const { response } = utils;
 
 // Success response
 return response.success({
@@ -184,124 +218,118 @@ Generates a URI for QR code generation.
 
 ### Features
 
-- Uses Argon2id by default (configurable to use bcrypt)
-- Implements password strength checking
-- Provides secure password generation
+- Uses bcrypt for secure password hashing
+- Implements password strength checking with zod schema
+- Configurable salt rounds for bcrypt
 
 ### API Reference
 
-#### `password.hash(plaintext: string, options?: HashOptions): Promise<string>`
+#### `password.hash(password: string): Promise<string>`
 
 Hashes a password securely.
 
-- `plaintext`: The password to hash
-- `options` (optional): Hashing configuration options
+- `password`: The password to hash
 - Returns: Promise resolving to the hashed password
 
-#### `password.verify(plaintext: string, hash: string): Promise<boolean>`
+#### `password.compare(password: string, hashedPassword: string): Promise<boolean>`
 
 Verifies a password against a hash.
 
-- `plaintext`: The password to verify
-- `hash`: The hashed password to compare against
+- `password`: The password to verify
+- `hashedPassword`: The hashed password to compare against
 - Returns: Promise resolving to `true` if matched, `false` otherwise
 
-#### `password.generate(options?: PasswordGenerateOptions): string`
+#### `password.schema`
 
-Generates a secure random password.
-
-- `options` (optional): Password generation options
-- Returns: A secure random password string
+A zod schema for validating password strength.
 
 ## Session Module Details
 
 ### Features
 
 - JWT-based token generation and validation
-- Refresh token rotation
-- Session expiration and revocation
+- Access and refresh token handling
+- Session expiration and validation
 
 ### API Reference
 
-#### `session.create(options: CreateSessionOptions): Promise<SessionTokens>`
+#### `sessions.create(userId: string, sessionId: string): Promise<{ accessToken: string, refreshToken: string }>`
 
 Creates a new session with access and refresh tokens.
 
-- `options`: Session creation options
+- `userId`: User identifier
+- `sessionId`: Session identifier
 - Returns: Promise resolving to access and refresh tokens
 
-#### `session.validate(token: string): Promise<TokenPayload | null>`
+#### `sessions.verify(accessToken: string, refreshToken: string): Promise<Object | null>`
 
-Validates a session token.
+Validates session tokens.
 
-- `token`: The token to validate
-- Returns: Promise resolving to the token payload if valid, null otherwise
-
-#### `session.refresh(refreshToken: string): Promise<SessionTokens | null>`
-
-Refreshes a session using a refresh token.
-
+- `accessToken`: The access token to validate
 - `refreshToken`: The refresh token
-- Returns: Promise resolving to new tokens if valid, null otherwise
+- Returns: Promise resolving to the session data if valid, null otherwise
 
 ## Integration Examples
 
-### Express.js Two-Factor Authentication
+### Express.js User Authentication
 
 ```typescript
 import express from 'express';
-import { totp, password } from '@tesseract/utils';
+import { defineTesseractUtils } from '@tesseract/utils';
+import Redis from 'ioredis';
 
 const app = express();
 app.use(express.json());
 
-// Setup 2FA for a user
-app.post('/setup-2fa', async (req, res) => {
-  const { userId } = req.body;
-  
-  // Generate a new secret
-  const secret = totp.generateSecret();
-  
-  // Save to user record in database
-  // await saveSecretToUser(userId, secret);
-  
-  // Generate URI for QR code
-  const uri = totp.generateUri(secret, 'user@example.com', 'YourApp');
-  
-  res.json({ 
-    secret,
-    uri
-  });
-});
-
-// Verify and enable 2FA
-app.post('/verify-2fa', async (req, res) => {
-  const { userId, token } = req.body;
-  
-  // Get user's secret from database
-  // const secret = await getUserSecret(userId);
-  const secret = 'JBSWY3DPEHPK3PXP'; // Example
-  
-  if (totp.verify(secret, token)) {
-    // Enable 2FA for the user
-    // await enableTwoFactorForUser(userId);
-    res.json({ success: true });
-  } else {
-    res.status(401).json({ success: false, message: 'Invalid code' });
+// Initialize utilities
+const redisClient = new Redis();
+const utils = defineTesseractUtils({
+  cache: { redisClient },
+  password: { saltRounds: 12 },
+  sessions: {
+    secretKey: 'your-secret-key',
+    accessTokenExpiresIn: '15m',
+    refreshTokenExpiresIn: '7d',
+    maxTokenAge: 7 * 24 * 60 * 60 * 1000,
   }
 });
 
-// User registration with password hashing
+const { password, sessions } = utils;
+
+// User registration 
 app.post('/register', async (req, res) => {
   const { email, plainPassword } = req.body;
   
   // Hash the password
   const hashedPassword = await password.hash(plainPassword);
   
-  // Save user to database
+  // Save user to database (example)
   // await createUser({ email, password: hashedPassword });
   
   res.json({ success: true });
+});
+
+// User login
+app.post('/login', async (req, res) => {
+  const { email, password: plainPassword } = req.body;
+  
+  // Get user from database (example)
+  // const user = await getUserByEmail(email);
+  const user = { id: '123', password: 'hashed-password-here' }; // Example
+  
+  const isPasswordValid = await password.compare(plainPassword, user.password);
+  
+  if (isPasswordValid) {
+    // Create session ID
+    const sessionId = 'session-' + Date.now();
+    
+    // Create tokens
+    const tokens = await sessions.create(user.id, sessionId);
+    
+    res.json({ success: true, ...tokens });
+  } else {
+    res.status(401).json({ success: false, message: 'Invalid credentials' });
+  }
 });
 
 app.listen(3000);
