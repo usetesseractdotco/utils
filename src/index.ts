@@ -1,13 +1,14 @@
 import type Redis from 'ioredis'
 
-import { error, success } from './api-response'
 import { clearCache } from './cache/clear-cache'
 import { deleteCache } from './cache/delete-cache'
 import { getCache } from './cache/get-cache'
 import { setCache } from './cache/set-cache'
+import { decrypt, encrypt, randomString } from './crypto'
 import { comparePassword } from './password/compare-password'
 import { hashPassword } from './password/hash-password'
 import { passwordSchema } from './password/schema'
+import { error, success } from './response'
 import { createSession } from './sessions/create-sesion'
 import { verifySession } from './sessions/verify-session'
 import { generateTOTP } from './totp/generate-totp'
@@ -73,16 +74,15 @@ export const defineTesseractUtils = ({
       success: <T>(data: T) => success({ data }),
       error: <T>(message: T) => error({ message }),
     },
+    crypto: {
+      encrypt: (data: string, secretKey: string) => encrypt(data, secretKey),
+      decrypt: (encryptedData: string, secretKey: string) =>
+        decrypt(encryptedData, secretKey),
+      randomString: (length: number) => randomString(length),
+    },
     totp: {
-      generateTOTPSecret: ({ length }: { length?: number }) =>
-        generateTOTPSecret({ length }),
-      generateTOTP: ({
-        secret,
-        counter,
-      }: {
-        secret: string
-        counter?: number
-      }) =>
+      generateSecret: (length?: number) => generateTOTPSecret({ length }),
+      generate: (secret: string, counter?: number) =>
         generateTOTP({
           secret,
           counter,
@@ -94,15 +94,7 @@ export const defineTesseractUtils = ({
             period,
           },
         }),
-      verifyTOTP: ({
-        secret,
-        token,
-        window,
-      }: {
-        secret: string
-        token: string
-        window?: number
-      }) =>
+      verify: (secret: string, token: string, window?: number) =>
         verifyTOTP({
           secret,
           token,
@@ -115,15 +107,7 @@ export const defineTesseractUtils = ({
             period,
           },
         }),
-      generateTOTPUri: ({
-        secret,
-        accountName,
-        issuer,
-      }: {
-        secret: string
-        accountName: string
-        issuer: string
-      }) =>
+      generateUri: (secret: string, accountName: string, issuer: string) =>
         generateTOTPUri({
           secret,
           accountName,
@@ -136,19 +120,15 @@ export const defineTesseractUtils = ({
             period,
           },
         }),
-      generateTOTPQRCode: ({
-        secret,
-        accountName,
-        qrOptions,
-      }: {
-        secret: string
-        accountName: string
+      generateQRCode: (
+        secret: string,
+        accountName: string,
         qrOptions: {
           errorCorrectionLevel: 'L' | 'M' | 'Q' | 'H'
           margin: number
           size: number
-        }
-      }) =>
+        },
+      ) =>
         generateTOTPQRCode({
           secret,
           accountName,
