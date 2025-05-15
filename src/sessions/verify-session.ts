@@ -1,10 +1,28 @@
 import * as jose from 'jose'
 
+/**
+ * Represents the payload structure of a JWT token.
+ *
+ * @typedef {Object} Payload
+ * @property {string} sub - Subject of the token (typically the user ID)
+ * @property {string} jti - JWT ID (typically the session ID)
+ */
 type Payload = {
   sub: string
   jti: string
 }
 
+/**
+ * Verifies both access and refresh tokens to validate a session.
+ *
+ * @param {Object} options - The verification options
+ * @param {string} options.accessToken - The access token to verify
+ * @param {string} options.refreshToken - The refresh token to verify
+ * @param {string} options.secretKey - The secret key used to sign the tokens
+ * @param {number} options.maxTokenAge - Maximum allowed token age in milliseconds
+ * @returns {Promise<{accessTokenPayload: Payload, refreshTokenPayload: Payload}>} The decoded payloads from both tokens
+ * @throws {Error} If token validation fails or tokens don't match
+ */
 export async function verifySession({
   accessToken,
   refreshToken,
