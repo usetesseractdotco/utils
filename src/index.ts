@@ -1,5 +1,6 @@
 import type Redis from 'ioredis'
 
+import { error, success } from './api-response'
 import { clearCache } from './cache/clear-cache'
 import { deleteCache } from './cache/delete-cache'
 import { getCache } from './cache/get-cache'
@@ -59,6 +60,10 @@ export const defineTesseractUtils = ({
           secretKey,
           maxTokenAge,
         }),
+    },
+    apiResponse: {
+      success: <T>(data: T) => success({ data }),
+      error: <T>(message: T) => error({ message }),
     },
   }
 }
