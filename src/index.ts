@@ -69,7 +69,7 @@ export const defineTesseractUtils = ({
           maxTokenAge,
         }),
     },
-    apiResponse: {
+    response: {
       success: <T>(data: T) => success({ data }),
       error: <T>(message: T) => error({ message }),
     },
