@@ -10,4 +10,5 @@ export default defineConfig({
   splitting: true,
   treeshake: true,
   tsconfig: 'tsconfig.json',
+  external: ['ioredis', 'qrcode', 'jose', 'bcryptjs'],
 })

@@ -1,6 +1,6 @@
 # @tesseract/utils
 
-A comprehensive collection of secure, zero-dependency utilities for Node.js backend applications. This package provides battle-tested implementations for common backend functionality including authentication, security, and data handling.
+A comprehensive collection of secure utilities for Node.js backend applications. This package provides battle-tested implementations for common backend functionality including authentication, security, and data handling.
 
 This package is an in-house utility library developed by Tesseract to provide flexible and reliable utilities specifically for our backend services.
 
