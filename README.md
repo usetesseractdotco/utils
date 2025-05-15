@@ -11,7 +11,6 @@ This package is an in-house utility library developed by Tesseract to provide fl
 - **Comprehensive**: Covers common backend utility needs in one package
 - **TypeScript**: Fully typed API with detailed documentation
 - **Configurable**: Sensible defaults with customization options
-- **Well Tested**: Thoroughly tested with high coverage
 
 ## Installation
 

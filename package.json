@@ -22,7 +22,6 @@
     "build": "tsup",
     "dev": "bun --watch src/index.ts",
     "lint": "eslint src --ext .ts --fix",
-    "test": "bun test",
     "prepublishOnly": "bun run build"
   },
   "keywords": [
