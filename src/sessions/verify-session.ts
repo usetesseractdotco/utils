@@ -27,12 +27,14 @@ export async function verifySession({
   accessToken,
   refreshToken,
   secretKey,
-  maxTokenAge,
+  maxAccessTokenAge,
+  maxRefreshTokenAge,
 }: {
   accessToken: string
   refreshToken: string
   secretKey: string
-  maxTokenAge: number
+  maxAccessTokenAge: number
+  maxRefreshTokenAge: number
 }) {
   const encodedSecretKey = new TextEncoder().encode(secretKey)
 
@@ -40,14 +42,14 @@ export async function verifySession({
     await jose.jwtVerify(accessToken, encodedSecretKey, {
       algorithms: ['HS256'],
       typ: 'JWT',
-      maxTokenAge: maxTokenAge / 1000, // in seconds
+      maxTokenAge: maxAccessTokenAge / 1000, // in seconds
     })
 
   const { payload: refreshTokenPayload }: { payload: Payload } =
     await jose.jwtVerify(refreshToken, encodedSecretKey, {
       algorithms: ['HS256'],
       typ: 'JWT',
-      maxTokenAge: maxTokenAge / 1000, // in seconds
+      maxTokenAge: maxRefreshTokenAge / 1000, // in seconds
     })
 
   if (

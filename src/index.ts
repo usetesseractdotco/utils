@@ -26,7 +26,8 @@ export const defineTesseractUtils = ({
     secretKey,
     accessTokenExpiresIn,
     refreshTokenExpiresIn,
-    maxTokenAge,
+    maxAccessTokenAge,
+    maxRefreshTokenAge,
   },
   totp: { issuer, accountName, algorithm, digits, period },
 }: {
@@ -36,7 +37,8 @@ export const defineTesseractUtils = ({
     secretKey: string
     accessTokenExpiresIn: string
     refreshTokenExpiresIn: string
-    maxTokenAge: number
+    maxAccessTokenAge: number
+    maxRefreshTokenAge: number
   }
   totp: TOTPOptions
 }) => {
@@ -68,7 +70,8 @@ export const defineTesseractUtils = ({
           accessToken,
           refreshToken,
           secretKey,
-          maxTokenAge,
+          maxAccessTokenAge,
+          maxRefreshTokenAge,
         }),
       refresh: (userId: string, sessionId: string) =>
         createRefreshToken({
