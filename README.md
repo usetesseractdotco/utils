@@ -1,4 +1,4 @@
-# @tesseract/utils
+# @usetesseract/utils
 
 A comprehensive collection of secure utilities for Node.js backend applications. This package provides battle-tested implementations for common backend functionality including authentication, security, and data handling.
 
@@ -15,11 +15,11 @@ This package is an in-house utility library developed by Tesseract to provide fl
 ## Installation
 
 ```bash
-npm install @tesseract/utils
+npm install @usetesseract/utils
 # or
-yarn add @tesseract/utils
+yarn add @usetesseract/utils
 # or
-bun add @tesseract/utils
+bun add @usetesseract/utils
 ```
 
 ## Usage
@@ -27,7 +27,7 @@ bun add @tesseract/utils
 First, initialize the utilities with your configuration:
 
 ```typescript
-import { defineTesseractUtils } from '@tesseract/utils';
+import { defineTesseractUtils } from '@usetesseract/utils';
 import Redis from 'ioredis';
 
 // Create a Redis client
@@ -274,7 +274,7 @@ Validates session tokens.
 
 ```typescript
 import express from 'express';
-import { defineTesseractUtils } from '@tesseract/utils';
+import { defineTesseractUtils } from '@usetesseract/utils';
 import Redis from 'ioredis';
 
 const app = express();
