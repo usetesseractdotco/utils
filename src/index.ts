@@ -58,7 +58,7 @@ export const defineTesseractUtils = ({
       schema: passwordSchema,
     },
     sessions: {
-      create: (userId: string, sessionId: string) =>
+      create: ({ userId, sessionId }: { userId: string; sessionId: string }) =>
         createSession({
           userId,
           sessionId,
@@ -66,7 +66,13 @@ export const defineTesseractUtils = ({
           accessTokenExpiresIn,
           refreshTokenExpiresIn,
         }),
-      verify: (accessToken: string, refreshToken: string) =>
+      verify: ({
+        accessToken,
+        refreshToken,
+      }: {
+        accessToken: string
+        refreshToken: string
+      }) =>
         verifySession({
           accessToken,
           refreshToken,
@@ -74,7 +80,7 @@ export const defineTesseractUtils = ({
           maxAccessTokenAge,
           maxRefreshTokenAge,
         }),
-      refresh: (userId: string, sessionId: string) =>
+      refresh: ({ userId, sessionId }: { userId: string; sessionId: string }) =>
         createRefreshToken({
           userId,
           sessionId,
@@ -83,8 +89,8 @@ export const defineTesseractUtils = ({
         }),
     },
     response: {
-      success: <T>(data: T) => success({ data }),
-      error: <T>(message: T) => error({ message }),
+      success: <T>(data: T, code?: number) => success({ data, code }),
+      error: <T>(message: T, code?: number) => error({ message, code }),
     },
     crypto: {
       encrypt: (data: string, secretKey: string) => encrypt(data, secretKey),
@@ -93,8 +99,9 @@ export const defineTesseractUtils = ({
       randomString: (length: number) => randomString(length),
     },
     totp: {
-      generateSecret: (length?: number) => generateTOTPSecret({ length }),
-      generate: (secret: string, counter?: number) =>
+      generateSecret: ({ length }: { length?: number } = {}) =>
+        generateTOTPSecret({ length }),
+      generate: ({ secret, counter }: { secret: string; counter?: number }) =>
         generateTOTP({
           secret,
           counter,
@@ -106,7 +113,15 @@ export const defineTesseractUtils = ({
             period,
           },
         }),
-      verify: (secret: string, token: string, window?: number) =>
+      verify: ({
+        secret,
+        token,
+        window,
+      }: {
+        secret: string
+        token: string
+        window?: number
+      }) =>
         verifyTOTP({
           secret,
           token,
@@ -119,7 +134,15 @@ export const defineTesseractUtils = ({
             period,
           },
         }),
-      generateUri: (secret: string, accountName: string, issuer: string) =>
+      generateUri: ({
+        secret,
+        accountName,
+        issuer,
+      }: {
+        secret: string
+        accountName: string
+        issuer: string
+      }) =>
         generateTOTPUri({
           secret,
           accountName,
@@ -132,21 +155,26 @@ export const defineTesseractUtils = ({
             period,
           },
         }),
-      generateQRCode: (
-        secret: string,
-        accountName: string,
+      generateQRCode: ({
+        secret,
+        accountName,
+        qrOptions,
+      }: {
+        secret: string
+        accountName: string
         qrOptions: {
           errorCorrectionLevel: 'L' | 'M' | 'Q' | 'H'
           margin: number
           size: number
-        },
-      ) =>
+        }
+      }) =>
         generateTOTPQRCode({
           secret,
           accountName,
           issuer: issuer || 'Tesseract',
           qrOptions,
           options: {
+            accountName,
             algorithm,
             digits,
             period,
