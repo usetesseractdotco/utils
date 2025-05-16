@@ -9,6 +9,7 @@ import { comparePassword } from './password/compare-password'
 import { hashPassword } from './password/hash-password'
 import { passwordSchema } from './password/schema'
 import { error, success } from './response'
+import { createRefreshToken } from './sessions/create-refresh-token'
 import { createSession } from './sessions/create-sesion'
 import { verifySession } from './sessions/verify-session'
 import { generateTOTP } from './totp/generate-totp'
@@ -68,6 +69,13 @@ export const defineTesseractUtils = ({
           refreshToken,
           secretKey,
           maxTokenAge,
+        }),
+      refresh: (userId: string, sessionId: string) =>
+        createRefreshToken({
+          userId,
+          sessionId,
+          secretKey,
+          refreshTokenExpiresIn,
         }),
     },
     response: {
