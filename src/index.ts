@@ -46,7 +46,8 @@ export const defineTesseractUtils = ({
     cache: {
       set: (key: string, value: string, ttl: number) =>
         setCache(key, value, ttl, redisClient),
-      get: (key: string) => getCache(key, redisClient),
+      get: <T>(key: string) => getCache<T>(key, redisClient),
+
       delete: (key: string) => deleteCache(key, redisClient),
       clear: () => clearCache(redisClient),
     },
