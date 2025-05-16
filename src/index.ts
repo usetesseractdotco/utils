@@ -89,8 +89,10 @@ export const defineTesseractUtils = ({
         }),
     },
     response: {
-      success: <T>(data: T, code?: number) => success({ data, code }),
-      error: <T>(message: T, code?: number) => error({ message, code }),
+      success: <T>({ data, code }: { data: T; code?: number }) =>
+        success({ data, code }),
+      error: <T>({ message, code }: { message: T; code?: number }) =>
+        error({ message, code }),
     },
     crypto: {
       encrypt: (data: string, secretKey: string) => encrypt(data, secretKey),
