@@ -2,7 +2,7 @@
   "name": "@usetesseract/utils",
   "description": "A collection of utilities for the Tesseract project",
   "author": "Tesseract Team",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
